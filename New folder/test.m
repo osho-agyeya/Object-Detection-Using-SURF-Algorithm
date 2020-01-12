@@ -1,0 +1,10 @@
+sceneImage1 = imread('scene.jpg');
+sceneImage  = rgb2gray(sceneImage1);
+%imwrite(sceneImage,'ppscene.jpg');
+%title(['Image of the cluttered scene ',str]);
+scenePoints = detectSURFFeatures(sceneImage);
+f=imshow(sceneImage);
+title(['300 Strongest Feature Points from cluttered scene ',str]);
+hold on;
+plot(selectStrongest(scenePoints, 300));
+saveas(gcf,'ab.jpg');

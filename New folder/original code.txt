@@ -1,0 +1,128 @@
+clc
+clear all
+close all
+%----------------------------------------------------------------%
+boxImage1 = imread('source1.jpg');
+boxImage  = rgb2gray(boxImage1);
+figure;
+imshow(boxImage);
+title('Image of the object to be identified');
+sceneImage1 = imread('scene.jpg');
+sceneImage  = rgb2gray(sceneImage1);
+figure;
+imshow(sceneImage);
+
+title('Image of a the cluttered scene');
+ 
+boxPoints = detectSURFFeatures(boxImage);
+scenePoints = detectSURFFeatures(sceneImage);
+figure;
+imshow(boxImage);
+title('100 Strongest Feature Points from source Image');
+hold on;
+plot(selectStrongest(boxPoints, 100));
+figure;
+imshow(sceneImage);
+title('300 Strongest Feature Points from Scene Image');
+hold on;
+plot(selectStrongest(scenePoints, 300));
+[boxFeatures, boxPoints] = extractFeatures(boxImage, boxPoints);
+[sceneFeatures, scenePoints] = extractFeatures(sceneImage, scenePoints);
+boxPairs = matchFeatures(boxFeatures, sceneFeatures);
+matchedBoxPoints = boxPoints(boxPairs(:, 1), :);%%all row entries from column 1 of boxPairs
+matchedScenePoints = scenePoints(boxPairs(:, 2), :);%%all row entries from column 2 of boxPairs into 
+figure;
+showMatchedFeatures(boxImage, sceneImage, matchedBoxPoints, ...
+matchedScenePoints, 'montage');%%montage here means that place the two images next to each other
+title('Putatively Matched Points (Including Outliers)');
+[tform, inlierBoxPoints, inlierScenePoints] = ...
+estimateGeometricTransform(matchedBoxPoints, matchedScenePoints, 'affine');
+figure;
+showMatchedFeatures(boxImage, sceneImage, inlierBoxPoints, ...
+inlierScenePoints, 'montage');
+title('Matched Points (Inliers Only)');
+boxPolygon = [1, 1;...                           % top-left
+size(boxImage, 2), 1;...                 % top-right
+size(boxImage, 2), size(boxImage, 1);... % bottom-right
+        1, size(boxImage, 1);...                 % bottom-left
+        1, 1];                   % top-left again to close the polygon
+newBoxPolygon = transformPointsForward(tform, boxPolygon);
+figure;
+imshow(sceneImage);
+hold on;
+line(newBoxPolygon(:, 1), newBoxPolygon(:, 2), 'Color', 'r');
+title('Detected Box');
+box2Image1 = imread('source2.jpg');
+box2Image  = rgb2gray(box2Image1);
+figure;
+imshow(box2Image);
+title('Image of an box2');
+box2Points = detectSURFFeatures(box2Image);
+figure;
+imshow(box2Image);
+hold on;
+plot(selectStrongest(box2Points, 1000));
+title('100 Strongest Feature Points from box2 Image');
+[box2Features, box2Points] = extractFeatures(box2Image, box2Points);
+box2Pairs = matchFeatures(box2Features, sceneFeatures, 'MaxRatio', 0.9);
+matchedbox2Points = box2Points(box2Pairs(:, 1), :);
+matchedScenePoints = scenePoints(box2Pairs(:, 2), :);
+figure;
+showMatchedFeatures(box2Image, sceneImage, matchedbox2Points, ...
+matchedScenePoints, 'montage');
+title('Putatively Matched Points (Including Outliers)');
+[tform, inlierbox2Points, inlierScenePoints] = ...
+estimateGeometricTransform(matchedbox2Points, matchedScenePoints, 'affine');
+figure;
+showMatchedFeatures(box2Image, sceneImage, inlierbox2Points, ...
+inlierScenePoints, 'montage');
+title('Matched Points (Inliers Only)');
+box2Polygon = [1, 1;...                                 % top-left
+size(box2Image, 2), 1;...                       % top-right
+size(box2Image, 2), size(box2Image, 1);...  % bottom-right
+        1, size(box2Image, 1);...                       % bottom-left
+        1,1];                         % top-left again to close the polygon
+ 
+newbox2Polygon = transformPointsForward(tform, box2Polygon);
+
+box3Image1 = imread('source3.jpg');
+box3Image  = rgb2gray(box3Image1);
+figure;
+imshow(box3Image);
+title('Image of an box3');
+box3Points = detectSURFFeatures(box3Image);
+figure;
+imshow(box3Image);
+hold on;
+plot(selectStrongest(box3Points, 1000));
+title('100 Strongest Feature Points from box3 Image');
+[box3Features, box3Points] = extractFeatures(box3Image, box3Points);
+box3Pairs = matchFeatures(box3Features, sceneFeatures, 'MaxRatio', 0.9);
+matchedbox3Points = box3Points(box3Pairs(:, 1), :);
+matchedScenePoints = scenePoints(box3Pairs(:, 2), :);
+figure;
+showMatchedFeatures(box3Image, sceneImage, matchedbox3Points, ...
+matchedScenePoints, 'montage');
+title('Putatively Matched Points (Including Outliers)');
+[tform, inlierbox3Points, inlierScenePoints] = ...
+estimateGeometricTransform(matchedbox3Points, matchedScenePoints, 'affine');
+figure;
+showMatchedFeatures(box3Image, sceneImage, inlierbox3Points, ...
+inlierScenePoints, 'montage');
+title('Matched Points (Inliers Only)');
+box3Polygon = [1, 1;...                                 % top-left
+size(box3Image, 2), 1;...                       % top-right
+size(box3Image, 2), size(box3Image, 1);...  % bottom-right
+        1, size(box3Image, 1);...                       % bottom-left
+        1,1];                         % top-left again to close the polygon
+ 
+newbox3Polygon = transformPointsForward(tform, box3Polygon);
+
+ 
+figure;
+imshow(sceneImage);
+hold on;
+line(newBoxPolygon(:, 1), newBoxPolygon(:, 2), 'Color', 'y');
+line(newbox2Polygon(:, 1), newbox2Polygon(:, 2), 'Color', 'g');
+line(newbox3Polygon(:, 1), newbox3Polygon(:, 2), 'Color', 'r');
+title('Detected Box, box2 and box3'); 
